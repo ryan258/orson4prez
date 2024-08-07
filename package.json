@@ -1,0 +1,16 @@
+{
+  "name": "orson4prez",
+  "version": "1.0.0",
+  "description": "AI-Powered Political Parody Bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^0.21.4",
+    "dotenv": "^10.0.0",
+    "express": "^4.19.2",
+    "node-cron": "^3.0.3",
+    "winston": "^3.13.1"
+  }
+}
