@@ -1,4 +1,5 @@
 const axios = require('axios');
+const fs = require('fs');
 
 class Scriptwriter {
   constructor() {
@@ -35,6 +36,9 @@ class Scriptwriter {
         news: newsItem,
         scripts: newsScripts
       });
+
+      // Log the scripts for this news item
+      this.logScripts(newsItem, newsScripts);
     }
 
     return scripts;
@@ -66,6 +70,24 @@ class Scriptwriter {
     write a ${platform} post (max ${maxLengths[platform]} characters) in Orson's voice commenting specifically on this news item. 
     For Twitter, include relevant hashtags. For Facebook, be more conversational. For the Press Release, be more formal but maintain Orson's naivety.
     Remember, Orson is naive and doesn't fully understand politics, but is endearing and well-meaning.`;
+  }
+
+  logScripts(newsItem, scripts) {
+    const logEntry = `
+--------------------
+News: ${newsItem.title}
+--------------------
+Twitter Drafts:
+${scripts.twitter.map((tweet, i) => `Draft ${i + 1}: ${tweet}`).join('\n\n')}
+
+Facebook Drafts:
+${scripts.facebook.map((post, i) => `Draft ${i + 1}: ${post}`).join('\n\n')}
+
+Press Release Drafts:
+${scripts.pressRelease.map((release, i) => `Draft ${i + 1}: ${release}`).join('\n\n')}
+`;
+
+    fs.appendFileSync('orson4prez.log', logEntry);
   }
 }
 

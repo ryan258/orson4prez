@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Oval } from 'react-loader-spinner';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import GenerateButton from './components/GenerateButton';
@@ -7,32 +8,45 @@ import CharacterBio from './components/CharacterBio';
 import './App.css';
 
 function App() {
-  // State to hold posts data
-  const [posts, setPosts] = useState({});
-  // State to hold news data
-  const [news, setNews] = useState([]);
-  // State to track if data is currently being loaded
+  const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  // State to hold any error messages
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
 
-  // useEffect hook to fetch data when the component mounts
   useEffect(() => {
     fetchLatestPosts();
   }, []);
 
-  // Function to fetch the latest posts and news
   const fetchLatestPosts = async () => {
     setIsLoading(true);
+    setProgress(0);
     try {
       const response = await fetch('/api/latest-posts');
       if (!response.ok) {
         throw new Error('Failed to fetch latest posts');
       }
-      const data = await response.json();
-      // Update state with fetched data, using empty objects/arrays as fallbacks
-      setPosts(data.posts || {});
-      setNews(data.news || []);
+      const reader = response.body.getReader();
+      const contentLength = +response.headers.get('Content-Length');
+      let receivedLength = 0;
+      let chunks = [];
+
+      while(true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        receivedLength += value.length;
+        setProgress(Math.round((receivedLength / contentLength) * 100));
+      }
+
+      let chunksAll = new Uint8Array(receivedLength);
+      let position = 0;
+      for(let chunk of chunks) {
+        chunksAll.set(chunk, position);
+        position += chunk.length;
+      }
+
+      const data = JSON.parse(new TextDecoder("utf-8").decode(chunksAll));
+      setPosts(data.posts);
       setError(null);
     } catch (error) {
       console.error('Error fetching latest posts:', error);
@@ -42,17 +56,41 @@ function App() {
     }
   };
 
-  // Function to handle generating new posts
   const handleGeneratePosts = async () => {
     setIsLoading(true);
+    setProgress(0);
     try {
-      const response = await fetch('/api/generate-posts', { method: 'POST' });
+      const response = await fetch('/api/generate-posts', { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       if (!response.ok) {
         throw new Error('Failed to generate new posts');
       }
-      const data = await response.json();
-      setPosts(data.posts || {});
-      setNews(data.news || []);
+      const reader = response.body.getReader();
+      const contentLength = +response.headers.get('Content-Length');
+      let receivedLength = 0;
+      let chunks = [];
+
+      while(true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        receivedLength += value.length;
+        setProgress(Math.round((receivedLength / contentLength) * 100));
+      }
+
+      let chunksAll = new Uint8Array(receivedLength);
+      let position = 0;
+      for(let chunk of chunks) {
+        chunksAll.set(chunk, position);
+        position += chunk.length;
+      }
+
+      const data = JSON.parse(new TextDecoder("utf-8").decode(chunksAll));
+      setPosts(data.posts);
       setError(null);
     } catch (error) {
       console.error('Error generating new posts:', error);
@@ -62,24 +100,35 @@ function App() {
     }
   };
 
-  // Render loading state if data is being fetched
   if (isLoading) {
-    return <div className="loading">Loading...</div>;
+    return (
+      <div className="loading-container">
+        <Oval
+          height={80}
+          width={80}
+          color="#ff4500"
+          visible={true}
+          ariaLabel='oval-loading'
+          secondaryColor="#ff4500"
+          strokeWidth={2}
+          strokeWidthSecondary={2}
+        />
+        <p>Loading... {progress}%</p>
+      </div>
+    );
   }
 
-  // Render error message if there's an error
   if (error) {
     return <div className="error">{error}</div>;
   }
 
-  // Main render when data is loaded successfully
   return (
     <div className="app">
       <Header />
       <main className="main-content">
         <Dashboard posts={posts} />
         <GenerateButton onGenerate={handleGeneratePosts} isLoading={isLoading} />
-        <NewsHeadlines news={news} />
+        <NewsHeadlines news={posts.map(post => post.news)} />
         <CharacterBio />
       </main>
     </div>

@@ -1,5 +1,5 @@
 .app {
-    text-align: center;
+    font-family: Arial, sans-serif;
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
@@ -9,6 +9,27 @@
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 20px;
+  }
+  
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  
+  .loading-container p {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #333;
+  }
+  
+  .error {
+    color: red;
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
   }
   
   @media (max-width: 768px) {
