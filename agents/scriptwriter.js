@@ -10,22 +10,25 @@ class Scriptwriter {
     const scripts = [];
 
     for (const newsItem of news) {
-      const platforms = ['Twitter', 'Facebook', 'Press Release'];
-      const newsScripts = {};
+      const newsScripts = {
+        twitter: [],
+        facebook: [],
+        pressRelease: []
+      };
 
-      for (const platform of platforms) {
-        const prompt = this.generatePrompt(newsItem, platform, orsonPersonality);
-        try {
-          const response = await axios.post(this.apiUrl, {
-            model: this.model,
-            prompt: prompt,
-            stream: false,
-          });
-          newsScripts[platform.toLowerCase()] = response.data.response.trim();
-        } catch (error) {
-          console.error(`Error creating ${platform} script:`, error.message);
-          newsScripts[platform.toLowerCase()] = `Oopsie! Orson forgot what he was going to say about this news on ${platform}!`;
-        }
+      // Generate 3 Twitter drafts
+      for (let i = 0; i < 3; i++) {
+        newsScripts.twitter.push(await this.generateScript(newsItem, 'Twitter', orsonPersonality));
+      }
+
+      // Generate 3 Facebook drafts
+      for (let i = 0; i < 3; i++) {
+        newsScripts.facebook.push(await this.generateScript(newsItem, 'Facebook', orsonPersonality));
+      }
+
+      // Generate 2 Press Release drafts
+      for (let i = 0; i < 2; i++) {
+        newsScripts.pressRelease.push(await this.generateScript(newsItem, 'Press Release', orsonPersonality));
       }
 
       scripts.push({
@@ -35,6 +38,21 @@ class Scriptwriter {
     }
 
     return scripts;
+  }
+
+  async generateScript(newsItem, platform, orsonPersonality) {
+    const prompt = this.generatePrompt(newsItem, platform, orsonPersonality);
+    try {
+      const response = await axios.post(this.apiUrl, {
+        model: this.model,
+        prompt: prompt,
+        stream: false,
+      });
+      return response.data.response.trim();
+    } catch (error) {
+      console.error(`Error creating ${platform} script:`, error.message);
+      return `Oopsie! Orson forgot what he was going to say about this news on ${platform}!`;
+    }
   }
 
   generatePrompt(newsItem, platform, orsonPersonality) {
