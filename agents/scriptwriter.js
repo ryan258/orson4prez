@@ -7,36 +7,47 @@ class Scriptwriter {
   }
 
   async createScripts(news, orsonPersonality) {
-    const newsHeadlines = news.map(item => item.title).join('. ');
+    const scripts = [];
 
-    const platforms = [
-      { name: 'Twitter', maxLength: 280 },
-      { name: 'Facebook', maxLength: 500 },
-      { name: 'Press Release', maxLength: 1000 }
-    ];
+    for (const newsItem of news) {
+      const platforms = ['Twitter', 'Facebook', 'Press Release'];
+      const newsScripts = {};
 
-    const scripts = {};
-
-    for (const platform of platforms) {
-      const prompt = `Given the following news: "${newsHeadlines}" and Orson's personality: "${orsonPersonality}", 
-      write a ${platform.name} post (max ${platform.maxLength} characters) in Orson's voice commenting on this news. 
-      For Twitter, include relevant hashtags. For Facebook, be more conversational. For the Press Release, be more formal but maintain Orson's naivety.
-      Remember, Orson is naive and doesn't fully understand politics, but is endearing and well-meaning.`;
-
-      try {
-        const response = await axios.post(this.apiUrl, {
-          model: this.model,
-          prompt: prompt,
-          stream: false,
-        });
-        scripts[platform.name.toLowerCase()] = response.data.response.trim();
-      } catch (error) {
-        console.error(`Error creating ${platform.name} script:`, error.message);
-        scripts[platform.name.toLowerCase()] = `Oopsie! Orson forgot what he was going to say on ${platform.name}!`;
+      for (const platform of platforms) {
+        const prompt = this.generatePrompt(newsItem, platform, orsonPersonality);
+        try {
+          const response = await axios.post(this.apiUrl, {
+            model: this.model,
+            prompt: prompt,
+            stream: false,
+          });
+          newsScripts[platform.toLowerCase()] = response.data.response.trim();
+        } catch (error) {
+          console.error(`Error creating ${platform} script:`, error.message);
+          newsScripts[platform.toLowerCase()] = `Oopsie! Orson forgot what he was going to say about this news on ${platform}!`;
+        }
       }
+
+      scripts.push({
+        news: newsItem,
+        scripts: newsScripts
+      });
     }
 
     return scripts;
+  }
+
+  generatePrompt(newsItem, platform, orsonPersonality) {
+    const maxLengths = {
+      Twitter: 280,
+      Facebook: 500,
+      'Press Release': 1000
+    };
+
+    return `Given the following news: "${newsItem.title}" and Orson's personality: "${orsonPersonality}", 
+    write a ${platform} post (max ${maxLengths[platform]} characters) in Orson's voice commenting specifically on this news item. 
+    For Twitter, include relevant hashtags. For Facebook, be more conversational. For the Press Release, be more formal but maintain Orson's naivety.
+    Remember, Orson is naive and doesn't fully understand politics, but is endearing and well-meaning.`;
   }
 }
 

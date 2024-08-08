@@ -52,8 +52,16 @@ async function generateNewContent() {
 }
 
 // API route to get the latest posts and news
-app.get('/api/latest-posts', (req, res) => {
-  res.json({ posts: latestPosts, news: latestNews });
+app.get('/api/latest-posts', async (req, res) => {
+  try {
+    const news = await newsFetcher.fetchLatestNews();
+    const orsonPersonality = await orsonAI.generatePersonality();
+    const scripts = await scriptwriter.createScripts(news, orsonPersonality);
+    res.json({ posts: scripts });
+  } catch (error) {
+    console.error('Error generating posts:', error);
+    res.status(500).json({ error: 'Failed to generate posts' });
+  }
 });
 
 // API route to generate new posts

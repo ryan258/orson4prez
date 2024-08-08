@@ -2,24 +2,26 @@ import React from 'react';
 import './Dashboard.css';
 
 function Dashboard({ posts }) {
-  // Check if posts object is empty
-  if (!posts || Object.keys(posts).length === 0) {
+  if (!posts || posts.length === 0) {
     return <div className="dashboard empty">No posts available at the moment.</div>;
   }
 
   return (
     <section className="dashboard">
       <h2>Latest Campaign Updates</h2>
-      <div className="posts-container">
-        {/* Iterate over each post in the posts object */}
-        {Object.entries(posts).map(([platform, post]) => (
-          <div key={platform} className="post">
-            {/* Capitalize the first letter of the platform name */}
-            <h3>{platform.charAt(0).toUpperCase() + platform.slice(1)}</h3>
-            <p>{post}</p>
+      {posts.map((post, index) => (
+        <div key={index} className="news-post">
+          <h3 className="news-title">{post.news.title}</h3>
+          <div className="posts-container">
+            {Object.entries(post.scripts).map(([platform, content]) => (
+              <div key={platform} className="post">
+                <h4>{platform.charAt(0).toUpperCase() + platform.slice(1)}</h4>
+                <p>{content}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </section>
   );
 }
