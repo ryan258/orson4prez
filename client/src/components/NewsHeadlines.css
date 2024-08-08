@@ -1,0 +1,33 @@
+.news-headlines {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.news-headlines h2 {
+  color: #333;
+  border-bottom: 2px solid #ff4500;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.news-headlines ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.news-headlines li {
+  margin-bottom: 10px;
+}
+
+.news-headlines a {
+  color: #0066cc;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.news-headlines a:hover {
+  color: #004080;
+  text-decoration: underline;
+}
